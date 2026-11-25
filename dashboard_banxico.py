@@ -257,22 +257,24 @@ with abajo_izq:
     st.pyplot(fig)
 
 with abajo_der:
-    st.subheader("Promedio por mes y año")
-    calor = principal.pivot_table(index="Anio", columns="Mes",
-                                  values="Valor", aggfunc="mean")
+    st.subheader("Distancia al máximo del periodo")
+    # Caída porcentual respecto al máximo acumulado hasta cada día:
+    # 0 % significa que la serie está en su punto más alto hasta entonces.
+    principal["Caida"] = (principal["Valor"] /
+                          principal["Valor"].cummax() - 1) * 100
 
     fig, ax = plt.subplots(figsize=(6, 3.4))
-    imagen = ax.imshow(calor, cmap="YlGnBu", aspect="auto")
-    fig.colorbar(imagen, ax=ax)
-    ax.set_xticks(range(len(calor.columns)))
-    ax.set_xticklabels(["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul",
-                        "Ago", "Sep", "Oct", "Nov", "Dic"][:len(calor.columns)])
-    ax.set_yticks(range(len(calor.index)))
-    ax.set_yticklabels(calor.index)
-    ax.grid(False)
+    ax.fill_between(principal["Fecha"], principal["Caida"], 0,
+                    color=AZUL_POS, alpha=0.35)
+    ax.plot(principal["Fecha"], principal["Caida"], color=AZUL_POS,
+            linewidth=1)
+    ax.axhline(0, color="gray", linewidth=0.8)
+    ax.set_xlabel("Fecha")
+    ax.set_ylabel("Caída desde el máximo (%)")
     st.pyplot(fig)
-    st.caption("Escala secuencial: el valor tiene orden pero no un cero "
-               "con significado, así que no va divergente.")
+    st.caption(f"Peor caída del periodo: {principal['Caida'].min():.1f} %. "
+               "Para un tipo de cambio, una caída fuerte significa que el "
+               "peso se fortaleció respecto a su punto más débil.")
 
 
 # ─── Datos ─────────────────────────────────────────────────────────────
